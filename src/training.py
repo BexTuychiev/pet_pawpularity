@@ -32,10 +32,6 @@ logging.basicConfig(
     format="%(asctime)s - %(message)s", datefmt="%d-%b-%y %H:%M:%S", level=logging.INFO
 )
 
-logger = DAGsHubLogger(
-    metrics_path="../metrics/metrics.csv", hparams_path="../metrics/params.yml"
-)
-
 SEED = 1121218
 
 
@@ -47,3 +43,23 @@ def get_metadata(random_state=SEED):
     x_test, y_test = test.drop("Pawpularity", axis=1), test[["Pawpularity"]]
 
     return (x_train, y_train), (x_test, y_test)
+
+
+def log_to_mlflow(param_dict, metrics_dict):
+    """
+    A simple function to log experiment results to MLFlow.
+    """
+    with mlflow.start_run():
+        mlflow.log_params(param_dict)
+        mlflow.log_metrics(metrics_dict)
+
+
+def log_to_git(param_dict, metrics_dict, path="."):
+    """
+    A simple function to log experiment results to Git.
+    """
+    logger = DAGsHubLogger(metrics_path=f"{path}/metrics.csv",
+                           hparams_path=f"{path}/params.yml")
+
+    logger.log_hyperparameters(param_dict)
+    logger.log_metrics(metrics_dict)
