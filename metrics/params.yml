@@ -1,1 +1,3 @@
-{}
+constant: null
+quantile: null
+strategy: mean
