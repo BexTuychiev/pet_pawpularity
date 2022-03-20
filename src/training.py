@@ -98,16 +98,20 @@ def train_xgb_model(random_state=SEED):
     model = xgb.XGBRegressor(n_estimators=10000, random_state=random_state)
 
     cv_results = cross_validate(model, x_train, y_train, cv=5,
-                                scoring="neg_mean_squared_error", return_estimator=True)
+                                scoring="neg_mean_squared_error", return_estimator=True,
+                                return_train_score=True, n_jobs=-1,
+                                verbose=2)
+    rmse_train = np.sqrt(-cv_results["train_score"].mean())
     rmse_val = np.sqrt(np.abs(cv_results["test_score"])).mean()
     best_model = cv_results["estimator"][np.argmin(rmse_val)]
     rmse_test = np.sqrt(mean_squared_error(y_test, best_model.predict(x_test)))
 
+    logging.log(logging.INFO, f"XGBoost model RMSE train: {rmse_train}")
     logging.log(logging.INFO, f"XGBoost model RMSE validation: {rmse_val}")
     logging.log(logging.INFO, f"XGBoost model RMSE test: {rmse_test}")
 
     log_to_git(dh_logger, best_model.get_params(),
-               {"rmse_test": rmse_test, "model_name": "XGBoost", "rmse_val": rmse_val})
+               {"rmse": rmse_test, "model_name": "XGBoost"})
 
 
 if __name__ == "__main__":
