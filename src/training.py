@@ -10,6 +10,7 @@ import joblib
 import lightgbm as lgb
 import matplotlib.pyplot as plt
 import mlflow
+import dagshub
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -38,7 +39,8 @@ os.environ['MLFLOW_TRACKING_PASSWORD'] = consts.MLFLOW_TRACKING_PASSWORD
 logging.basicConfig(
     format="%(asctime)s - %(message)s", datefmt="%d-%b-%y %H:%M:%S", level=logging.INFO
 )
-
+dh_logger = dagshub.dagshub_logger(metrics_path="metrics/metrics.csv",
+                                   hparams_path="metrics/params.yml")
 SEED = 1121218
 
 
@@ -60,6 +62,12 @@ def log_to_mlflow(param_dict, metrics_dict):
     with mlflow.start_run():
         mlflow.log_params(param_dict)
         mlflow.log_metrics(metrics_dict)
+
+
+def log_to_git(logger, params, metrics):
+    with logger as logger:
+        logger.log_hyperparams(params)
+        logger.log_metrics(metrics)
 
 
 def baseline_model():
@@ -163,14 +171,14 @@ def get_keras_conv2d():
     """A function to train a Keras conv2d model."""
     inputs = keras.Input(shape=(224, 224, 3))
 
-    X = Conv2D(filters=64, kernel_size=5, padding='same', activation='relu')(
+    X = Conv2D(filters=32, kernel_size=3, padding='same', activation='relu')(
         inputs)
-    X = MaxPool2D(3)(X)
+    X = MaxPool2D(2)(X)
 
-    X = Conv2D(filters=128, kernel_size=5, padding='same', activation='relu')(X)
+    X = Conv2D(filters=34, kernel_size=3, padding='same', activation='relu')(X)
     X = MaxPool2D(3)(X)
     X = Dropout(0.25)(X)
-    X = Conv2D(filters=256, kernel_size=5, padding='same', activation='relu')(X)
+    X = Conv2D(filters=128, kernel_size=3, padding='same', activation='relu')(X)
     X = MaxPool2D(3)(X)
     X = Dropout(0.25)(X)
     X = Flatten()(X)
@@ -195,7 +203,8 @@ def fit_keras_conv2d():
 
     model = get_keras_conv2d()
 
-    callbacks = [tf.keras.callbacks.EarlyStopping(monitor='val_rmse', patience=5)]
+    callbacks = [tf.keras.callbacks.EarlyStopping(monitor='val_root_mean_squared_error',
+                                                  patience=5)]
 
     logging.log(logging.INFO, "Started training...")
     history = model.fit(train_generator, validation_data=validation_generator, epochs=30,
@@ -205,4 +214,11 @@ def fit_keras_conv2d():
 
 
 if __name__ == "__main__":
-    pass
+    log_to_git(dh_logger, dict(
+        model_name="Conv2D",
+        layers=4,
+        epochs=30,
+        kernel_size=3,
+        max_pool=2
+    ),
+               {"rmse": 20.7034})
