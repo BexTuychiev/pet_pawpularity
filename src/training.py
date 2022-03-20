@@ -17,7 +17,7 @@ import tensorflow as tf
 import tensorflow.keras as keras
 import xgboost as xgb
 import consts
-from dagshub import DAGsHubLogger
+from g import DAGsHubLogger
 from sklearn.compose import *
 from sklearn.dummy import DummyRegressor
 from sklearn.ensemble import *
@@ -32,7 +32,6 @@ warnings.filterwarnings("ignore")
 mlflow.set_tracking_uri("https://dagshub.com/BexTuychiev/pet_pawpularity.mlflow")
 os.environ['MLFLOW_TRACKING_USERNAME'] = consts.MLFLOW_TRACKING_USERNAME
 os.environ['MLFLOW_TRACKING_PASSWORD'] = consts.MLFLOW_TRACKING_PASSWORD
-
 
 logging.basicConfig(
     format="%(asctime)s - %(message)s", datefmt="%d-%b-%y %H:%M:%S", level=logging.INFO
@@ -124,7 +123,8 @@ def get_lgb_model(random_state=SEED):
     """
     A function to create an LGB model.
     """
-    model = lgb.LGBMRegressor(n_estimators=10000, random_state=random_state, device="gpu")
+    model = lgb.LGBMRegressor(n_estimators=10000, random_state=random_state, device="gpu",
+                              subsample=0.8, colsample_bytree=0.8, max_depth=5)
 
     return model
 
@@ -154,7 +154,8 @@ def train(random_state=SEED):
 
     # Log to git
 
-    log_to_mlflow(best_model.get_params(), {"rmse": rmse_test})
+    log_to_mlflow({**best_model.get_params(), **{"model_name": "LGBM"}},
+                  {"rmse": rmse_test})
 
 
 if __name__ == "__main__":
