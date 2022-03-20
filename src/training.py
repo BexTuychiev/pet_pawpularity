@@ -134,7 +134,8 @@ def get_cb_model(random_state=SEED):
     A function to create an CatBoost model.
     """
     model = cb.CatBoostRegressor(iterations=10000, random_state=random_state,
-                                 task_type="GPU", verbose=False)
+                                 task_type="GPU", verbose=False,
+                                 subsample=0.8, colsample_bylevel=0.8, max_depth=5)
 
     return model
 
