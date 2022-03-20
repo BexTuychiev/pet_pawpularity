@@ -42,10 +42,13 @@ SEED = 1121218
 
 def resize_image(path, target_size=(224, 224), save_path="data/processed/train"):
     """A function to resize images."""
-    img = plt.imread(path)
+    root_path = Path(path)
+
+    img = plt.imread(root_path)
     img = resize(img, target_size)
 
-    plt.imsave(save_path)
+    target_path = Path(save_path) / root_path.stem / root_path.suffix
+    plt.imsave(target_path, img)
 
     return img
 
