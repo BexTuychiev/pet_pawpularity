@@ -47,15 +47,13 @@ def resize_image(path, target_size=(224, 224), save_path="data/processed/train")
     img = plt.imread(root_path)
     img = resize(img, target_size)
 
-    target_path = Path(save_path) / root_path.stem / root_path.suffix
+    target_path = (Path(save_path) / root_path.stem).with_suffix(root_path.suffix)
     plt.imsave(target_path, img)
-
-    return img
 
 
 def execute_parallel(func, iterator):
     """A function to execute parallel jobs on the iterator."""
-    Parallel(n_jobs=-1, backend="multiprocessing")(
+    Parallel(n_jobs=3, backend="multiprocessing")(
         delayed(func)(item) for item in tqdm(iterator))
 
 
