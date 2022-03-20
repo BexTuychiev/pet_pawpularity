@@ -61,7 +61,7 @@ def execute_parallel(func, iterator):
 def load_tf_datasets():
     """A function to save images as TF datasets."""
     train_df = pd.read_csv("data/raw/train.csv")
-    train_df['filename'] = 'data/raw/train/' + train_df['Id'] + '.jpg'
+    train_df['filename'] = train_df['Id'] + '.jpg'
 
     img_size = (224, 224)
     rescale = 1.0 / 255.0

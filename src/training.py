@@ -15,7 +15,9 @@ import pandas as pd
 import seaborn as sns
 import tensorflow as tf
 import tensorflow.keras as keras
+from tensorflow.keras.wrappers.scikit_learn import KerasRegressor
 from tensorflow.keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout
+from preprocess import load_tf_datasets
 import xgboost as xgb
 import consts
 from sklearn.compose import *
@@ -180,7 +182,26 @@ def get_keras_conv2d():
 
     model = keras.Model(inputs=inputs, outputs=outputs)
 
+    model.compile(optimizer='adam', loss='mse',
+                  metrics=[tf.keras.metrics.RootMeanSquaredError()])
+
     return model
+
+
+def fit_keras_conv2d():
+    """A function to train a Keras conv2d model."""
+    train_generator, validation_generator = load_tf_datasets()
+    logging.log(logging.INFO, "Loaded the data generators")
+
+    model = get_keras_conv2d()
+
+    callbacks = [tf.keras.callbacks.EarlyStopping(monitor='val_rmse', patience=5)]
+
+    logging.log(logging.INFO, "Started training...")
+    history = model.fit(train_generator, validation_data=validation_generator, epochs=30,
+                        callbacks=callbacks, verbose=2)
+
+    return history
 
 
 if __name__ == "__main__":
