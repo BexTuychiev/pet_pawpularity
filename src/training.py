@@ -15,9 +15,9 @@ import pandas as pd
 import seaborn as sns
 import tensorflow as tf
 import tensorflow.keras as keras
+from tensorflow.keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout
 import xgboost as xgb
 import consts
-from dagshub import DAGsHubLogger
 from sklearn.compose import *
 from sklearn.dummy import DummyRegressor
 from sklearn.ensemble import *
@@ -36,10 +36,6 @@ os.environ['MLFLOW_TRACKING_PASSWORD'] = consts.MLFLOW_TRACKING_PASSWORD
 logging.basicConfig(
     format="%(asctime)s - %(message)s", datefmt="%d-%b-%y %H:%M:%S", level=logging.INFO
 )
-
-# Create the global dagshub logger
-dh_logger = dagshub.dagshub_logger(metrics_path=Path("metrics/metrics.csv"),
-                                   hparams_path=Path("metrics/params.yml"))
 
 SEED = 1121218
 
@@ -62,16 +58,6 @@ def log_to_mlflow(param_dict, metrics_dict):
     with mlflow.start_run():
         mlflow.log_params(param_dict)
         mlflow.log_metrics(metrics_dict)
-
-
-def log_to_git(logger, param_dict, metrics_dict):
-    """
-    A simple function to log experiment results to Git.
-    """
-
-    with logger as logger:
-        logger.log_hyperparams(param_dict)
-        logger.log_metrics(metrics_dict)
 
 
 def baseline_model():
@@ -171,5 +157,31 @@ def train(random_state=SEED):
                   {"rmse": rmse_test})
 
 
+def get_keras_conv2d():
+    """A function to train a Keras conv2d model."""
+    inputs = keras.Input(shape=(224, 224, 3))
+
+    X = Conv2D(filters=64, kernel_size=5, padding='same', activation='relu')(
+        inputs)
+    X = MaxPool2D(3)(X)
+
+    X = Conv2D(filters=128, kernel_size=5, padding='same', activation='relu')(X)
+    X = MaxPool2D(3)(X)
+    X = Dropout(0.25)(X)
+    X = Conv2D(filters=256, kernel_size=5, padding='same', activation='relu')(X)
+    X = MaxPool2D(3)(X)
+    X = Dropout(0.25)(X)
+    X = Flatten()(X)
+
+    X = Dense(256, activation='relu')(X)
+    X = Dropout(0.5)(X)
+
+    outputs = Dense(1)(X)
+
+    model = keras.Model(inputs=inputs, outputs=outputs)
+
+    return model
+
+
 if __name__ == "__main__":
-    train()
+    pass

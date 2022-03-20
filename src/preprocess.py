@@ -18,6 +18,7 @@ import pandas as pd
 import seaborn as sns
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout
 import tensorflow.keras as keras
 import xgboost as xgb
 import consts
@@ -57,7 +58,7 @@ def execute_parallel(func, iterator):
         delayed(func)(item) for item in tqdm(iterator))
 
 
-def save_tf_datasets():
+def load_tf_datasets():
     """A function to save images as TF datasets."""
     train_df = pd.read_csv("data/raw/train.csv")
     train_df['filename'] = 'data/raw/train/' + train_df['Id'] + '.jpg'
@@ -82,8 +83,8 @@ def save_tf_datasets():
     validation_generator = data_generator.flow_from_dataframe(**gen_kwargs,
                                                               subset="validation")
 
+    return train_generator, validation_generator
+
 
 if __name__ == "__main__":
-    img_paths = glob.glob("data/raw/train/*.jpg")
-
-    execute_parallel(resize_image, img_paths)
+    pass
