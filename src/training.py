@@ -16,6 +16,7 @@ import seaborn as sns
 import tensorflow as tf
 import tensorflow.keras as keras
 import xgboost as xgb
+import consts
 from dagshub import DAGsHubLogger
 from sklearn.compose import *
 from sklearn.dummy import DummyRegressor
@@ -29,6 +30,9 @@ from sklearn.tree import *
 warnings.filterwarnings("ignore")
 
 mlflow.set_tracking_uri("https://dagshub.com/BexTuychiev/pet_pawpularity.mlflow")
+os.environ['MLFLOW_TRACKING_USERNAME'] = consts.MLFLOW_TRACKING_USERNAME
+os.environ['MLFLOW_TRACKING_PASSWORD'] = consts.MLFLOW_TRACKING_PASSWORD
+
 
 logging.basicConfig(
     format="%(asctime)s - %(message)s", datefmt="%d-%b-%y %H:%M:%S", level=logging.INFO
@@ -55,8 +59,6 @@ def log_to_mlflow(param_dict, metrics_dict):
     """
     A simple function to log experiment results to MLFlow.
     """
-    client = mlflow.tracking.MlflowClient()
-    client.create_experiment('baseline')
 
     with mlflow.start_run():
         mlflow.log_params(param_dict)
@@ -100,7 +102,7 @@ def get_xgb_model(random_state=SEED):
                              max_depth=5,
                              subsample=0.8,
                              colsample_bytree=0.8,
-                             random_state=random_state)
+                             random_state=random_state, tree_method='gpu_hist')
 
     return model
 
@@ -118,13 +120,22 @@ def cv(model):
     return cv_score
 
 
+def get_lgb_model(random_state=SEED):
+    """
+    A function to create an LGB model.
+    """
+    model = lgb.LGBMRegressor(n_estimators=10000, random_state=random_state, device="gpu")
+
+    return model
+
+
 def train(random_state=SEED):
     """
     A function to train an XGBoost model.
     """
     _, (x_test, y_test) = get_metadata(random_state=random_state)
 
-    model = get_xgb_model()
+    model = get_lgb_model()
     cv_results = cv(model)
 
     # Compute scores
@@ -137,14 +148,13 @@ def train(random_state=SEED):
     rmse_test = np.sqrt(mean_squared_error(y_test, best_model.predict(x_test)))
 
     # Log the results to terminal
-    logging.log(logging.INFO, f"XGBoost model RMSE train: {rmse_train}")
-    logging.log(logging.INFO, f"XGBoost model RMSE validation: {rmse_val}")
-    logging.log(logging.INFO, f"XGBoost model RMSE test: {rmse_test}")
+    logging.log(logging.INFO, f"LGBM  model RMSE train: {rmse_train}")
+    logging.log(logging.INFO, f"LGBM model RMSE validation: {rmse_val}")
+    logging.log(logging.INFO, f"LGBM model RMSE test: {rmse_test}")
 
     # Log to git
 
-    log_to_git(dh_logger, best_model.get_params(),
-               {"rmse": rmse_test})
+    log_to_mlflow(best_model.get_params(), {"rmse": rmse_test})
 
 
 if __name__ == "__main__":
