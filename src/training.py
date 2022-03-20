@@ -95,7 +95,11 @@ def train_xgb_model(random_state=SEED):
     A function to train an XGBoost model.
     """
     (x_train, y_train), (x_test, y_test) = get_metadata(random_state=random_state)
-    model = xgb.XGBRegressor(n_estimators=10000, random_state=random_state)
+    model = xgb.XGBRegressor(n_estimators=20000,
+                             max_depth=5,
+                             subsample=0.8,
+                             colsample_bytree=0.8,
+                             random_state=random_state)
 
     cv_results = cross_validate(model, x_train, y_train, cv=5,
                                 scoring="neg_mean_squared_error", return_estimator=True,
