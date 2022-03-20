@@ -13,8 +13,10 @@ import mlflow
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import tensorflow as tf
+import tensorflow.keras as keras
 import xgboost as xgb
-import dagshub
+from dagshub import DAGsHubLogger
 from sklearn.compose import *
 from sklearn.dummy import DummyRegressor
 from sklearn.ensemble import *
@@ -94,7 +96,7 @@ def get_xgb_model(random_state=SEED):
     """
     A function to create an XGB model.
     """
-    model = xgb.XGBRegressor(n_estimators=20000,
+    model = xgb.XGBRegressor(n_estimators=10000,
                              max_depth=5,
                              subsample=0.8,
                              colsample_bytree=0.8,
@@ -120,16 +122,18 @@ def train(random_state=SEED):
     """
     A function to train an XGBoost model.
     """
-    (x_train, y_train), (x_test, y_test) = get_metadata(random_state=random_state)
+    _, (x_test, y_test) = get_metadata(random_state=random_state)
+
     model = get_xgb_model()
     cv_results = cv(model)
-
-    # Get the best model
-    best_model = cv_results["estimator"][np.argmin(rmse_val)]
 
     # Compute scores
     rmse_train = np.sqrt(-cv_results["train_score"].mean())
     rmse_val = np.sqrt(np.abs(cv_results["test_score"])).mean()
+
+    # Get the best model
+    best_model = cv_results["estimator"][np.argmin(rmse_val)]
+
     rmse_test = np.sqrt(mean_squared_error(y_test, best_model.predict(x_test)))
 
     # Log the results to terminal
@@ -138,9 +142,10 @@ def train(random_state=SEED):
     logging.log(logging.INFO, f"XGBoost model RMSE test: {rmse_test}")
 
     # Log to git
+
     log_to_git(dh_logger, best_model.get_params(),
-               {"rmse": rmse_test, "model_name": "XGBoost"})
+               {"rmse": rmse_test})
 
 
 if __name__ == "__main__":
-    train_xgb_model()
+    train()
