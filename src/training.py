@@ -53,6 +53,9 @@ def log_to_mlflow(param_dict, metrics_dict):
     """
     A simple function to log experiment results to MLFlow.
     """
+    client = mlflow.tracking.MlflowClient()
+    client.create_experiment('baseline')
+
     with mlflow.start_run():
         mlflow.log_params(param_dict)
         mlflow.log_metrics(metrics_dict)
@@ -81,11 +84,31 @@ def baseline_model():
     rmse = mean_squared_error(y_test, y_pred, squared=False)
     rmse = round(rmse, 3)
 
-    log_to_git(dh_logger, baseline.get_params(), {"rmse": rmse, "model": "baseline"})
+    log_to_git(dh_logger, baseline.get_params(), {"rmse": rmse, "model_name": "baseline"})
     logging.log(logging.INFO, f"Baseline model RMSE: {rmse}")
 
     return rmse
 
 
+def train_xgb_model(random_state=SEED):
+    """
+    A function to train an XGBoost model.
+    """
+    (x_train, y_train), (x_test, y_test) = get_metadata(random_state=random_state)
+    model = xgb.XGBRegressor(n_estimators=10000, random_state=random_state)
+
+    cv_results = cross_validate(model, x_train, y_train, cv=5,
+                                scoring="neg_mean_squared_error", return_estimator=True)
+    rmse_val = np.sqrt(np.abs(cv_results["test_score"])).mean()
+    best_model = cv_results["estimator"][np.argmin(rmse_val)]
+    rmse_test = np.sqrt(mean_squared_error(y_test, best_model.predict(x_test)))
+
+    logging.log(logging.INFO, f"XGBoost model RMSE validation: {rmse_val}")
+    logging.log(logging.INFO, f"XGBoost model RMSE test: {rmse_test}")
+
+    log_to_git(dh_logger, best_model.get_params(),
+               {"rmse_test": rmse_test, "model_name": "XGBoost", "rmse_val": rmse_val})
+
+
 if __name__ == "__main__":
-    baseline_model()
+    train_xgb_model()
