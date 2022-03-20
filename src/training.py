@@ -17,7 +17,7 @@ import tensorflow as tf
 import tensorflow.keras as keras
 import xgboost as xgb
 import consts
-from g import DAGsHubLogger
+from dagshub import DAGsHubLogger
 from sklearn.compose import *
 from sklearn.dummy import DummyRegressor
 from sklearn.ensemble import *
@@ -129,13 +129,23 @@ def get_lgb_model(random_state=SEED):
     return model
 
 
+def get_cb_model(random_state=SEED):
+    """
+    A function to create an CatBoost model.
+    """
+    model = cb.CatBoostRegressor(iterations=10000, random_state=random_state,
+                                 task_type="GPU", verbose=False)
+
+    return model
+
+
 def train(random_state=SEED):
     """
     A function to train an XGBoost model.
     """
     _, (x_test, y_test) = get_metadata(random_state=random_state)
 
-    model = get_lgb_model()
+    model = get_cb_model()
     cv_results = cv(model)
 
     # Compute scores
@@ -148,13 +158,15 @@ def train(random_state=SEED):
     rmse_test = np.sqrt(mean_squared_error(y_test, best_model.predict(x_test)))
 
     # Log the results to terminal
-    logging.log(logging.INFO, f"LGBM  model RMSE train: {rmse_train}")
-    logging.log(logging.INFO, f"LGBM model RMSE validation: {rmse_val}")
-    logging.log(logging.INFO, f"LGBM model RMSE test: {rmse_test}")
+    logging.log(logging.INFO,
+                f"{model.__class__.__name__} model RMSE train: {rmse_train}")
+    logging.log(logging.INFO,
+                f"{model.__class__.__name__} model RMSE validation: {rmse_val}")
+    logging.log(logging.INFO, f"{model.__class__.__name__} model RMSE test: {rmse_test}")
 
     # Log to git
 
-    log_to_mlflow({**best_model.get_params(), **{"model_name": "LGBM"}},
+    log_to_mlflow({**best_model.get_params(), **{"model_name": model.__class__.__name__}},
                   {"rmse": rmse_test})
 
 
