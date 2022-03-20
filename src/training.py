@@ -29,6 +29,7 @@ from sklearn.model_selection import *
 from sklearn.pipeline import *
 from sklearn.preprocessing import *
 from sklearn.tree import *
+from sklearn.linear_model import *
 
 warnings.filterwarnings("ignore")
 
@@ -136,13 +137,13 @@ def get_cb_model(random_state=SEED):
     return model
 
 
-def train(random_state=SEED):
+def train_simple(random_state=SEED):
     """
-    A function to train an XGBoost model.
+    A function to train simple models on the metadata.
     """
     _, (x_test, y_test) = get_metadata(random_state=random_state)
 
-    model = get_cb_model()
+    model = LinearRegression()
     cv_results = cv(model)
 
     # Compute scores
@@ -162,9 +163,11 @@ def train(random_state=SEED):
     logging.log(logging.INFO, f"{model.__class__.__name__} model RMSE test: {rmse_test}")
 
     # Log to git
-
     log_to_mlflow({**best_model.get_params(), **{"model_name": model.__class__.__name__}},
                   {"rmse": rmse_test})
+    log_to_git(dh_logger,
+               {**best_model.get_params(), **{"model_name": model.__class__.__name__}},
+               {"rmse": rmse_test})
 
 
 def get_keras_conv2d():
@@ -214,11 +217,4 @@ def fit_keras_conv2d():
 
 
 if __name__ == "__main__":
-    log_to_git(dh_logger, dict(
-        model_name="Conv2D",
-        layers=4,
-        epochs=30,
-        kernel_size=3,
-        max_pool=2
-    ),
-               {"rmse": 20.7034})
+    train_simple()

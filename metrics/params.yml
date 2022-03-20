@@ -1,5 +1,5 @@
-epochs: 30
-kernel_size: 3
-layers: 4
-max_pool: 2
-model_name: Conv2D
+copy_X: true
+fit_intercept: true
+model_name: LinearRegression
+n_jobs: null
+normalize: false
