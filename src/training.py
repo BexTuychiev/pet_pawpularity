@@ -21,6 +21,12 @@ from tensorflow.keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout
 from preprocess import load_tf_datasets
 import xgboost as xgb
 import consts
+
+mlflow.sklearn.autolog()
+mlflow.keras.autolog()
+mlflow.xgboost.autolog()
+mlflow.lightgbm.autolog()
+
 from sklearn.compose import *
 from sklearn.dummy import DummyRegressor
 from sklearn.ensemble import *
@@ -141,33 +147,22 @@ def train_simple(random_state=SEED):
     """
     A function to train simple models on the metadata.
     """
-    _, (x_test, y_test) = get_metadata(random_state=random_state)
+    (x_train, y_train), (x_test, y_test) = get_metadata(random_state=random_state)
 
-    model = LinearRegression()
-    cv_results = cv(model)
+    model = RandomForestRegressor(n_estimators=1500, random_state=random_state,
+                                  max_depth=5, n_jobs=-1, min_samples_split=3,
+                                  max_features="sqrt")
 
-    # Compute scores
-    rmse_train = np.sqrt(-cv_results["train_score"].mean())
-    rmse_val = np.sqrt(np.abs(cv_results["test_score"])).mean()
+    with mlflow.start_run():
+        model.fit(x_train, y_train)
+        y_pred = model.predict(x_test)
+        rmse_test = mean_squared_error(y_test, y_pred, squared=False)
 
-    # Get the best model
-    best_model = cv_results["estimator"][np.argmin(rmse_val)]
+        # Log the results to terminal
+        logging.log(logging.INFO,
+                    f"{model.__class__.__name__} model RMSE test: {rmse_test}")
 
-    rmse_test = np.sqrt(mean_squared_error(y_test, best_model.predict(x_test)))
-
-    # Log the results to terminal
-    logging.log(logging.INFO,
-                f"{model.__class__.__name__} model RMSE train: {rmse_train}")
-    logging.log(logging.INFO,
-                f"{model.__class__.__name__} model RMSE validation: {rmse_val}")
-    logging.log(logging.INFO, f"{model.__class__.__name__} model RMSE test: {rmse_test}")
-
-    # Log to git
-    log_to_mlflow({**best_model.get_params(), **{"model_name": model.__class__.__name__}},
-                  {"rmse": rmse_test})
-    log_to_git(dh_logger,
-               {**best_model.get_params(), **{"model_name": model.__class__.__name__}},
-               {"rmse": rmse_test})
+    mlflow.end_run()
 
 
 def get_keras_conv2d():
