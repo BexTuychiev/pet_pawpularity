@@ -194,8 +194,44 @@ def get_keras_conv2d():
     return model
 
 
+def train_simple_keras():
+    """
+    A function to train simple Keras models on the metadata.
+    """
+    # load metadata
+    (x_train, y_train), (x_test, y_test) = get_metadata()
+
+    with mlflow.start_run():
+        model = keras.Sequential()
+
+        model.add(Dense(64, activation='relu', input_shape=x_train.shape))
+        model.add(Dropout(0.3))
+        model.add(Dense(32, activation='relu'))
+        model.add(Dense(1))
+
+        callbacks = [
+            tf.keras.callbacks.EarlyStopping(monitor='val_root_mean_squared_error',
+                                             patience=5)]
+        model.compile(optimizer='adam', loss='mse',
+                      metrics=[tf.keras.metrics.RootMeanSquaredError()],
+                      callbacks=callbacks)
+
+        model.fit(x_train, y_train, epochs=30, validation_data=(x_test, y_test))
+
+        y_pred = model.predict(x_test)
+        rmse_test = mean_squared_error(y_test, y_pred, squared=False)
+
+        # Log the results to terminal
+        logging.log(logging.INFO,
+                    f"{model.__class__.__name__} model RMSE test: {rmse_test}")
+
+    mlflow.end_run()
+
+
 def fit_keras_conv2d():
-    """A function to train a Keras conv2d model."""
+    """
+    A function to train a Keras conv2d model.
+    """
     train_generator, validation_generator = load_tf_datasets()
     logging.log(logging.INFO, "Loaded the data generators")
 
@@ -212,4 +248,4 @@ def fit_keras_conv2d():
 
 
 if __name__ == "__main__":
-    train_simple()
+    train_simple_keras()
