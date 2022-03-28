@@ -1,0 +1,5 @@
+copy_X: true
+fit_intercept: true
+model_name: LinearRegression
+n_jobs: null
+normalize: false
