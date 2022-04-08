@@ -1,41 +1,29 @@
 import logging
 import os
-import pathlib
-import pickle
 import warnings
-from pathlib import Path
 
 import catboost as cb
-import joblib
 import lightgbm as lgb
-import matplotlib.pyplot as plt
 import mlflow
 import dagshub
-import numpy as np
 import pandas as pd
-import seaborn as sns
 import tensorflow as tf
-import tensorflow.keras as keras
-from tensorflow.keras.wrappers.scikit_learn import KerasRegressor
-from tensorflow.keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout
+from tensorflow import keras
+from keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout
 from preprocess import load_tf_datasets
 import xgboost as xgb
 import consts
+
+from sklearn.dummy import DummyRegressor
+from sklearn.ensemble import *
+from sklearn.model_selection import *
 
 mlflow.sklearn.autolog()
 mlflow.keras.autolog()
 mlflow.xgboost.autolog()
 mlflow.lightgbm.autolog()
 
-from sklearn.compose import *
-from sklearn.dummy import DummyRegressor
-from sklearn.ensemble import *
 from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import *
-from sklearn.pipeline import *
-from sklearn.preprocessing import *
-from sklearn.tree import *
-from sklearn.linear_model import *
 
 warnings.filterwarnings("ignore")
 
@@ -209,14 +197,9 @@ def train_simple_keras():
         model.add(Dense(32, activation='relu'))
         model.add(Dense(1))
 
-        callbacks = [
-            tf.keras.callbacks.EarlyStopping(monitor='val_root_mean_squared_error',
-                                             patience=5)]
-        model.compile(optimizer='adam', loss='mse',
-                      metrics=[tf.keras.metrics.RootMeanSquaredError()],
-                      callbacks=callbacks)
+        model.compile(optimizer='adam', loss='mse')
 
-        model.fit(x_train, y_train, epochs=30, validation_data=(x_test, y_test))
+        model.fit(x_train, y_train, epochs=10, validation_data=(x_test, y_test))
 
         y_pred = model.predict(x_test)
         rmse_test = mean_squared_error(y_test, y_pred, squared=False)
@@ -248,4 +231,4 @@ def fit_keras_conv2d():
 
 
 if __name__ == "__main__":
-    train_simple_keras()
+    fit_keras_conv2d()

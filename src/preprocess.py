@@ -17,11 +17,9 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import tensorflow as tf
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout
-import tensorflow.keras as keras
+import keras
+from keras.preprocessing.image import ImageDataGenerator
 import xgboost as xgb
-import consts
 from sklearn.compose import *
 from sklearn.dummy import DummyRegressor
 from sklearn.ensemble import *
