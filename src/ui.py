@@ -8,7 +8,7 @@ API_ENDPOINT = "https://pet-pawpularity.herokuapp.com/predict"
 
 # Create the header page content
 st.title("Pet Pawpularity Prediction App")
-st.markdown("### Predict the popularity of your cat or dog with machine learning",
+st.markdown("### Predict the cuteness of your cat or dog with machine learning",
             unsafe_allow_html=True)
 
 url = "https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&" \
