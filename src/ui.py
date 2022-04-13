@@ -42,7 +42,7 @@ def predict(img):
 
 
 def main():
-    img_file = st.file_uploader("Upload an image", type=["jpg", "png"])
+    img_file = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg", "image/jpeg"])
     if img_file is not None:
         with st.spinner("Predicting..."):
             # Generate a random int
