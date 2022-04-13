@@ -41,7 +41,6 @@ def predict(img):
         raise Exception("Status: {}".format(response.status_code))
 
 
-@st.cache(show_spinner=False)
 def spinner_predicting(img_file):
     with st.spinner("Predicting..."):
         # Generate a random int
