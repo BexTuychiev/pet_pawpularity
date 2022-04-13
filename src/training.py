@@ -2,6 +2,7 @@ import logging
 import os
 import warnings
 
+import bentoml
 import catboost as cb
 import lightgbm as lgb
 import mlflow
@@ -154,7 +155,7 @@ def train_simple(random_state=SEED):
 
 
 def get_keras_conv2d():
-    """A function to train a Keras conv2d model."""
+    """A function to build an instance of a Keras conv2d model."""
     inputs = keras.Input(shape=(224, 224, 3))
 
     X = Conv2D(filters=32, kernel_size=3, padding='same', activation='relu')(
@@ -224,11 +225,32 @@ def fit_keras_conv2d():
                                                   patience=5)]
 
     logging.log(logging.INFO, "Started training...")
-    history = model.fit(train_generator, validation_data=validation_generator, epochs=30,
-                        callbacks=callbacks, verbose=2)
+    model.fit(train_generator, validation_data=validation_generator, epochs=30,
+              callbacks=callbacks, verbose=2)
 
-    return history
+    return model
+
+
+def save(model, model_name, path):
+    """
+    A function to save a given model to BentoML local store and with joblib.
+    """
+    bentoml.keras.save(model_name, model, store_as_json_and_weights=True)
+
+    joblib.dump(model, path)
+
+
+def main():
+    model = fit_keras_conv2d()
+
+    logging.log(logging.INFO, "Saving...")
+
+    save(model,
+         "keras_conv2d_smaller",
+         "models/keras_conv2d_smaller.joblib")
+
+    logging.log(logging.INFO, "Done!")
 
 
 if __name__ == "__main__":
-    fit_keras_conv2d()
+    main()
