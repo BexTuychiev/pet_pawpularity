@@ -29,6 +29,8 @@ from sklearn.metrics import mean_squared_error
 warnings.filterwarnings("ignore")
 
 logging.getLogger('tensorflow').setLevel(logging.FATAL)
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
+
 
 mlflow.set_tracking_uri("https://dagshub.com/BexTuychiev/pet_pawpularity.mlflow")
 os.environ['MLFLOW_TRACKING_USERNAME'] = consts.MLFLOW_TRACKING_USERNAME

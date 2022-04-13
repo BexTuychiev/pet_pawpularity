@@ -1,10 +1,15 @@
 import logging
 import warnings
+import os
 
 import numpy as np
 import bentoml
 from bentoml.io import Text, NumpyNdarray
 from skimage.transform import resize
+
+warnings.filterwarnings("ignore")
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
+logging.getLogger('tensorflow').setLevel(logging.FATAL)
 
 
 def create_bento_service_keras(bento_name):
