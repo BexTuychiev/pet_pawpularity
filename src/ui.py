@@ -10,8 +10,15 @@ API_ENDPOINT = "https://pet-pawpularity.herokuapp.com/predict"
 st.title("Pet Pawpularity Prediction App")
 st.markdown("### Predict the popularity of your cat or dog with machine learning",
             unsafe_allow_html=True)
-with open("data/app_image.jpg", "rb") as f:
-    st.image(f.read(), use_column_width=True)
+
+url = "https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&" \
+      "cs=tinysrgb&dpr=2&h=650&w=940"
+
+# Download the image from the URL
+image_response = requests.get(url)
+image_data = image_response.content
+
+st.image(image_data, use_column_width=True)
 
 st.text("Grab a picture of your pet or upload an image to get a Pawpularity score.")
 
