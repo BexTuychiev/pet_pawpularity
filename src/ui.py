@@ -11,8 +11,8 @@ st.title("Pet Pawpularity Prediction App")
 st.markdown("### Predict the cuteness of your cat or dog with machine learning",
             unsafe_allow_html=True)
 
-url = "https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&" \
-      "cs=tinysrgb&dpr=2&h=650&w=940"
+url = "https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto" \
+      "=compress&cs=tinysrgb&dpr=2&h=650&w=940"
 
 # Download the image from the URL
 image_response = requests.get(url)
@@ -41,22 +41,24 @@ def predict(img):
         raise Exception("Status: {}".format(response.status_code))
 
 
+@st.cache(show_spinner=False)
+def spinner_predicting(img_file):
+    with st.spinner("Predicting..."):
+        # Generate a random int
+        random_int = np.random.randint(0, 50)
+        prediction = float(predict(img_file).strip("[").strip("]")) + random_int
+        st.success(f"Your pet's cuteness score is {prediction:.3f}")
+
+
 def main():
-    img_file = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg", "image/jpeg"])
+    img_file = st.file_uploader("Upload an image",
+                                type=["jpg", "png", "jpeg", "image/jpeg"])
     if img_file is not None:
-        with st.spinner("Predicting..."):
-            # Generate a random int
-            random_int = np.random.randint(0, 50)
-            prediction = float(predict(img_file).strip("[").strip("]")) + random_int
-            st.success(f"Your pet's cuteness score is {prediction:.3f}")
+        spinner_predicting(img_file)
 
     camera_input = st.camera_input("Or take a picture")
     if camera_input is not None:
-        with st.spinner("Predicting..."):
-            # Generate a random int
-            random_int = np.random.randint(0, 50)
-            prediction = float(predict(camera_input).strip("[").strip("]")) + random_int
-            st.success(f"Your pet's cuteness score is {prediction:.3f}")
+        spinner_predicting(img_file)
 
 
 if __name__ == "__main__":
