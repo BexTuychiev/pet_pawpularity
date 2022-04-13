@@ -1,6 +1,7 @@
 import logging
 import os
 import warnings
+import joblib
 
 import bentoml
 import catboost as cb
@@ -19,7 +20,6 @@ from sklearn.dummy import DummyRegressor
 from sklearn.ensemble import *
 from sklearn.model_selection import *
 
-mlflow.sklearn.autolog()
 mlflow.keras.autolog()
 mlflow.xgboost.autolog()
 mlflow.lightgbm.autolog()
@@ -27,6 +27,8 @@ mlflow.lightgbm.autolog()
 from sklearn.metrics import mean_squared_error
 
 warnings.filterwarnings("ignore")
+
+logging.getLogger('tensorflow').setLevel(logging.FATAL)
 
 mlflow.set_tracking_uri("https://dagshub.com/BexTuychiev/pet_pawpularity.mlflow")
 os.environ['MLFLOW_TRACKING_USERNAME'] = consts.MLFLOW_TRACKING_USERNAME
