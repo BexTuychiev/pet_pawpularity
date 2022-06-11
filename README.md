@@ -4,8 +4,8 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/github_username/repo_name">
-    <img src="https://apps.streamlitusercontent.com/bextuychiev/pet_pawpularity/ui/src%2Fui.py/+/media/6fe64911908ba32d7d2066d06d5cf50a4985564c0c5f556cd3cf7bb0.jpeg" alt="Logo" width="160" height="100">
+  <a href="https://github.com/BexTuychiev/pet_pawpularity">
+    <img src="data/app_image.jpg" alt="Logo" width="160" height="100">
   </a>
 
 <h3 align="center">Pet Pawpularity</h3>
