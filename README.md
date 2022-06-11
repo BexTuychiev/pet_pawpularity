@@ -5,7 +5,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/github_username/repo_name">
-    <img src="data/app_image.jpg" alt="Logo" width="160" height="100">
+    <img src="https://apps.streamlitusercontent.com/bextuychiev/pet_pawpularity/ui/src%2Fui.py/+/media/6fe64911908ba32d7d2066d06d5cf50a4985564c0c5f556cd3cf7bb0.jpeg" alt="Logo" width="160" height="100">
   </a>
 
 <h3 align="center">Pet Pawpularity</h3>
@@ -39,7 +39,7 @@
 
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://miro.medium.com/proxy/1*61yvVw-rD6RIu96yIqu7gw.gif)
+![](data/demo.gif)
 
 Hi, I am Bex! I built this project to create a simple web app that would allow any user to
 upload an image of their pet and get a cuteness score. The data comes from Petfinder.my
